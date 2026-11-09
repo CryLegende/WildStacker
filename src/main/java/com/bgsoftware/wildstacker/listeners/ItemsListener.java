@@ -13,7 +13,8 @@ import com.bgsoftware.wildstacker.utils.entity.EntityStorage;
 import com.bgsoftware.wildstacker.utils.entity.EntityUtils;
 import com.bgsoftware.wildstacker.utils.items.ItemUtils;
 import com.bgsoftware.wildstacker.utils.threads.Executor;
-import org.bukkit.Chunk;
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.block.Hopper;
 import org.bukkit.entity.Chicken;
 import org.bukkit.entity.Entity;
@@ -92,7 +93,7 @@ public final class ItemsListener implements Listener {
             Executor.sync(() -> {
                 if (EntityStorage.hasMetadata(e.getEntity(), EntityFlag.DROPPED_BY_PLAYER))
                     EntityStorage.removeMetadata(e.getEntity(), EntityFlag.DROPPED_BY_PLAYER);
-                else if (isChunkLimit(e.getLocation().getChunk()))
+                else if (isChunkLimit(e.getLocation()))
                     stackedItem.remove();
             });
         });
@@ -176,13 +177,19 @@ public final class ItemsListener implements Listener {
         }
     }
 
-    private boolean isChunkLimit(Chunk chunk) {
+    private boolean isChunkLimit(Location location) {
         int chunkLimit = plugin.getSettings().itemsChunkLimit;
 
         if (chunkLimit <= 0)
             return false;
 
-        return (int) Arrays.stream(chunk.getEntities()).filter(entity -> entity instanceof Item).count() > chunkLimit;
+        World world = location.getWorld();
+
+        // Never load a chunk synchronously only to count the items inside it.
+        if (world == null || !world.isChunkLoaded(location.getBlockX() >> 4, location.getBlockZ() >> 4))
+            return false;
+
+        return (int) Arrays.stream(location.getChunk().getEntities()).filter(entity -> entity instanceof Item).count() > chunkLimit;
     }
 
     private void setItemInHand(LivingEntity entity, ItemStack itemStack) {
