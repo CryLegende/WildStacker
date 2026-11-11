@@ -13,6 +13,7 @@ import com.bgsoftware.wildstacker.objects.WStackedSpawner;
 import com.bgsoftware.wildstacker.utils.entity.EntityUtils;
 import com.bgsoftware.wildstacker.utils.spawners.SpawnerCachedData;
 import com.bgsoftware.wildstacker.utils.spawners.SyncedCreatureSpawner;
+import com.bgsoftware.wildstacker.utils.threads.RctTickers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.ServerLevel;
@@ -57,7 +58,7 @@ public abstract class AbstractNMSSpawners implements NMSSpawners {
         if (!isChunkContainsSpawners(levelChunk))
             return;
 
-        List<TickingBlockEntity> blockEntityTickers = LEVEL_BLOCK_ENTITY_TICKERS.get(serverLevel);
+        List<TickingBlockEntity> blockEntityTickers = RctTickers.view(LEVEL_BLOCK_ENTITY_TICKERS.get(serverLevel), serverLevel);
 
         List<TickingBlockEntity> watchersToAdd = new LinkedList<>();
         Iterator<TickingBlockEntity> blockEntityIterator = blockEntityTickers.iterator();
@@ -94,7 +95,7 @@ public abstract class AbstractNMSSpawners implements NMSSpawners {
         int blockY = location.getBlockY();
         int blockZ = location.getBlockZ();
 
-        List<TickingBlockEntity> blockEntityTickers = LEVEL_BLOCK_ENTITY_TICKERS.get(serverLevel);
+        List<TickingBlockEntity> blockEntityTickers = RctTickers.view(LEVEL_BLOCK_ENTITY_TICKERS.get(serverLevel), serverLevel);
 
         TickingBlockEntity watcherToAdd = null;
         Iterator<TickingBlockEntity> blockEntityIterator = blockEntityTickers.iterator();
